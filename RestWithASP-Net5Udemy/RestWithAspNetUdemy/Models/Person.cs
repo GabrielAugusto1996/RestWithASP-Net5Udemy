@@ -1,4 +1,4 @@
-namespace RestWithASP_Net5Udemy.Model
+namespace RestWithASP_Net5Udemy.Models
 {
     public class Person
     {
