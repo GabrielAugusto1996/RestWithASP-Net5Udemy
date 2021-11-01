@@ -6,12 +6,14 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using RestWithASP_Net5Udemy.Services;
+using RestWithAspNetUdemy.Contexts;
 using RestWithAspNetUdemy.Services.Implementations;
 
 namespace RestWithASP_Net5Udemy
@@ -30,6 +32,12 @@ namespace RestWithASP_Net5Udemy
         {
 
             services.AddControllers();
+
+            var connection = Configuration["MySqlConnection:MySqlConnectionString"];
+
+            services.AddDbContext<MysqlContext>(options => options.UseMySql(connection));
+
+            //Injecao de Dependencia
             services.AddScoped<IPersonService, PersonService>();
             services.AddSwaggerGen(c =>
             {
