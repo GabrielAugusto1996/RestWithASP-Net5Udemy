@@ -2,72 +2,58 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using RestWithASP_Net5Udemy.Models;
+using RestWithASP_Net5Udemy.Repositories;
 using RestWithASP_Net5Udemy.Services;
-using RestWithAspNetUdemy.Contexts;
 
 namespace RestWithAspNetUdemy.Services.Implementations
 {
     class PersonService : IPersonService
     {
 
-        private readonly MysqlContext _context;
+        private readonly IPersonRepository _personRepository;
 
-        public PersonService(MysqlContext context)
+        public PersonService(IPersonRepository personRepository)
         {
-            _context = context;
+            _personRepository = personRepository;
         }
 
         public Person Create(Person person)
         {
             try
             {
-                _context.Persons.Add(person);
-                _context.SaveChanges();
+                return _personRepository.Create(person);
             }
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
-
-            return person;
         }
 
         public void Delete(long id)
         {
-            _context.Remove(_context.Persons.SingleOrDefault(p => p.Id.Equals(id)));
-            _context.SaveChanges();
+            _personRepository.Delete(id);
         }
 
         public List<Person> FindAll()
         {
-            return _context.Persons.ToList();
+            return _personRepository.FindAll();
         }
 
         public Person FindById(long id)
         {
-            return _context.Persons.SingleOrDefault(p => p.Id.Equals(id));
+            return _personRepository.FindById(id);
         }
 
         public Person Update(Person person)
         {
-            var personUpdate = FindById(person.Id);
-
-            if (personUpdate != null)
+            try
             {
-                try
-                {
-                    _context.Entry(personUpdate).CurrentValues.SetValues(person);
-                    _context.SaveChanges();
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception(ex.Message);
-                }
-
-                return person;
+                return _personRepository.Update(person);
             }
-
-            return null;
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
     }
 }

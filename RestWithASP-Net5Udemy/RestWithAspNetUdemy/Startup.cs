@@ -12,8 +12,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using RestWithASP_Net5Udemy.Repositories;
 using RestWithASP_Net5Udemy.Services;
 using RestWithAspNetUdemy.Contexts;
+using RestWithAspNetUdemy.Repositories.Implementations;
 using RestWithAspNetUdemy.Services.Implementations;
 
 namespace RestWithASP_Net5Udemy
@@ -37,12 +39,18 @@ namespace RestWithASP_Net5Udemy
 
             services.AddDbContext<MysqlContext>(options => options.UseMySql(connection));
 
-            //Injecao de Dependencia
-            services.AddScoped<IPersonService, PersonService>();
+            PrepareDependencyInjection(services);
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "RestWithASP_Net5Udemy", Version = "v1" });
             });
+        }
+
+        private static void PrepareDependencyInjection(IServiceCollection services)
+        {
+            services.AddScoped<IPersonService, PersonService>();
+            services.AddScoped<IPersonRepository, PersonRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
