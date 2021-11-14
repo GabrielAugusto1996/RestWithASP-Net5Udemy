@@ -17,17 +17,24 @@ using RestWithASP_Net5Udemy.Services;
 using RestWithAspNetUdemy.Contexts;
 using RestWithAspNetUdemy.Repositories.Implementations;
 using RestWithAspNetUdemy.Services.Implementations;
+using Serilog;
 
 namespace RestWithASP_Net5Udemy
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
+
+        public IWebHostEnvironment Environment { get; }
 
         public IConfiguration Configuration { get; }
+
+        public Startup(IConfiguration configuration, IWebHostEnvironment envinroment)
+        {
+            Configuration = configuration;
+            Environment = envinroment;
+
+            Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
+        }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -38,6 +45,11 @@ namespace RestWithASP_Net5Udemy
             var connection = Configuration["MySqlConnection:MySqlConnectionString"];
 
             services.AddDbContext<MysqlContext>(options => options.UseMySql(connection));
+
+            if (Environment.IsDevelopment())
+            {
+                MigrateDatabase(connection);
+            }
 
             PrepareDependencyInjection(services);
 
@@ -73,6 +85,27 @@ namespace RestWithASP_Net5Udemy
             {
                 endpoints.MapControllers();
             });
+        }
+
+        // O Evolve é similar ao Flyway
+        private void MigrateDatabase(string connection)
+        {
+            try
+            {
+                var evolveConnection = new MySql.Data.MySqlClient.MySqlConnection(connection);
+                var evolve = new Evolve.Evolve(evolveConnection, msg => Log.Information(msg))
+                {
+                    Locations = new List<string> {"Scripts/Migrations", "Scripts/Dataset"},
+                    IsEraseDisabled = true
+                };
+
+                evolve.Migrate();
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Database migration failed", exception);
+                throw;
+            }
         }
     }
 }
